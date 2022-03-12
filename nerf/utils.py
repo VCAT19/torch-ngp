@@ -263,8 +263,21 @@ class Trainer(object):
         images = data["image"] # [B, H, W, 3/4]
         poses = data["pose"] # [B, 4, 4]
         intrinsics = data["intrinsic"] # [B, 3, 3]
-
-        # sample rays 
+        
+	# Print density
+        N = 64
+        X = torch.linspace(bound_min[0], bound_max[0], resolution).split(N)
+        Y = torch.linspace(bound_min[1], bound_max[1], resolution).split(N)
+        Z = torch.linspace(bound_min[2], bound_max[2], resolution).split(N)
+        with torch.no_grad():
+        	for xi, xs in enumerate(X):
+            		for yi, ys in enumerate(Y):
+                		for zi, zs in enumerate(Z):
+                    			xx, yy, zz = torch.meshgrid(xs, ys, zs, indexing='ij') # for torch < 1.10, should remove indexing='ij'
+                    			pts = torch.cat([xx.reshape(-1, 1), yy.reshape(-1, 1), zz.reshape(-1, 1)], dim=-1).unsqueeze(0)
+					print(self.model.density(pts.to(self.device), 1))
+	
+	# sample rays 
         B, H, W, C = images.shape
         rays_o, rays_d, inds = get_rays(poses, intrinsics, H, W, self.conf['num_rays'])
         images = torch.gather(images.reshape(B, -1, C), 1, torch.stack(C*[inds], -1)) # [B, N, 3/4]
@@ -344,7 +357,6 @@ class Trainer(object):
             with torch.no_grad():
                 with torch.cuda.amp.autocast(enabled=self.fp16):
                     sdfs = self.model.density(pts.to(self.device), bound)
-                    print("yay")
             return sdfs
 
         bounds_min = torch.FloatTensor([-bound] * 3)
@@ -713,7 +725,6 @@ class Trainer(object):
         if self.model.cuda_ray:
             state['mean_count'] = self.model.mean_count
             state['mean_density'] = self.model.mean_density
-            print('yay 0')
 
         if full:
             state['optimizer'] = self.optimizer.state_dict()
@@ -792,7 +803,6 @@ class Trainer(object):
                 self.model.mean_count = checkpoint_dict['mean_count']
             if 'mean_density' in checkpoint_dict:
                 self.model.mean_density = checkpoint_dict['mean_density']
-            print("yay 1")
         
         if self.optimizer and  'optimizer' in checkpoint_dict:
             try:
