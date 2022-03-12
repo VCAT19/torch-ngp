@@ -344,6 +344,7 @@ class Trainer(object):
             with torch.no_grad():
                 with torch.cuda.amp.autocast(enabled=self.fp16):
                     sdfs = self.model.density(pts.to(self.device), bound)
+                    print("yay")
             return sdfs
 
         bounds_min = torch.FloatTensor([-bound] * 3)
@@ -712,6 +713,7 @@ class Trainer(object):
         if self.model.cuda_ray:
             state['mean_count'] = self.model.mean_count
             state['mean_density'] = self.model.mean_density
+            print('yay 0')
 
         if full:
             state['optimizer'] = self.optimizer.state_dict()
@@ -790,6 +792,7 @@ class Trainer(object):
                 self.model.mean_count = checkpoint_dict['mean_count']
             if 'mean_density' in checkpoint_dict:
                 self.model.mean_density = checkpoint_dict['mean_density']
+            print("yay 1")
         
         if self.optimizer and  'optimizer' in checkpoint_dict:
             try:
