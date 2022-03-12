@@ -23,7 +23,7 @@
 // this is very slow compared to float or __half2, do not use!
 static inline  __device__ at::Half atomicAdd(at::Half *address, at::Half val) {
 // Comment out line below when running on bespin or older machine/older GPU
-  return atomicAdd(reinterpret_cast<__half*>(address), val);
+//  return atomicAdd(reinterpret_cast<__half*>(address), val);
 }
 
 
