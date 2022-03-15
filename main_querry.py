@@ -1,12 +1,9 @@
 import torch
 import argparse
-import mcubes
-import trimesh
 
 from nerf.provider import NeRFDataset
 from nerf.gui import NeRFGUI
 from nerf.utils import *
-
 
 #torch.autograd.set_detect_anomaly(True)
 
@@ -61,31 +58,6 @@ if __name__ == '__main__':
     )
     #model = NeRFNetwork(encoding="frequency", encoding_dir="frequency", num_layers=4, hidden_dim=256, geo_feat_dim=256, num_layers_color=4, hidden_dim_color=128)
     print(model)
-    
-
-    # Marching Cubes from Tim Chen
-    N = 512
-    t = np.linspace(-1.2, 1.2, N+1)
-    chunk = 10000
-    device = torch.device('cuda')
-    bound = 2
-    with torch.no_grad():
-        query_pts = np.stack(np.meshgrid(t, t, t), -1).astype(np.float32)
-        print(query_pts.shape)
-        sh = query_pts.shape
-        raw = model.density(torch.tensor(query_pts).to(device),bound).cpu().numpy()
-
-    sigma = np.maximum(raw[...,-1], 0.)
-
-    sigma = sigma.reshape(sh[:-1])
-
-    threshold = 5.
-    print('fraction occupied', np.mean(sigma > threshold))
-    vertices, triangles = mcubes.marching_cubes(sigma, threshold)
-    print('done', vertices.shape, triangles.shape)
-
-    mesh = trimesh.Trimesh(vertices / N - .5, triangles)
-    mesh.show()
 
     ### test mode
     if opt.test:
@@ -139,3 +111,34 @@ if __name__ == '__main__':
             test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1)
 
             trainer.test(test_loader)
+
+       
+            # Marching Cubes from Tim Chen
+            N = 512
+            t = np.linspace(-1.2, 1.2, N+1)
+            chunk = 100
+            device = torch.device('cuda')
+            bound = 2
+            with torch.no_grad():
+                query_pts = np.stack(np.meshgrid(t, t, t), -1).astype(np.float32)
+                query_pts = query_pts.reshape(-1, N+1, 3)
+                raw = []
+                for i in range(query_pts.shape[0] // chunk):
+                    pts = query_pts[i*chunk: (i+1)*chunk, :]
+                    raw_chunk = model.density(torch.tensor(pts).to(device),bound).cpu().numpy()
+                    raw.append(raw_chunk)
+                raw = np.concatenate(raw)
+                raw = raw.reshape(N+1,N+1,N+1)
+                    #raw = model.density(torch.tensor(pts).to(device),bound).cpu().numpy()
+            print('Bingo')
+            sigma = np.maximum(raw[...,-1], 0.)
+
+            sigma = sigma.reshape(sh[:-1])
+
+            threshold = 5.
+            print('fraction occupied', np.mean(sigma > threshold))
+            vertices, triangles = mcubes.marching_cubes(sigma, threshold)
+            print('done', vertices.shape, triangles.shape)
+
+            mesh = trimesh.Trimesh(vertices / N + 1  - .5, triangles)
+            mesh.show()
