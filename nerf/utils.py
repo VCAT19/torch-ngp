@@ -183,12 +183,7 @@ class Trainer(object):
             criterion.to(self.device)
         self.criterion = criterion
 
-        if optimizer is None:
-            self.optimizer = optim.Adam(self.model.parameters(), lr=0.001, weight_decay=5e-4) # naive adam
-        else:
-            self.optimizer = optimizer(self.model)
-	
-	# Print density 4: Worked
+        # Print Density 3:
         bound = 2
         bound_min = torch.FloatTensor([-bound] * 3)
         bound_max = torch.FloatTensor([bound] * 3)
@@ -213,6 +208,13 @@ class Trainer(object):
                         pts = pts.to(self.device)
                         print(pts.is_cuda)
                         print(self.model.density(pts.to(self.device), bound))
+	
+        if optimizer is None:
+            self.optimizer = optim.Adam(self.model.parameters(), lr=0.001, weight_decay=5e-4) # naive adam
+        else:
+            self.optimizer = optimizer(self.model)
+	
+	# Print density 4: Worked
 	
         if lr_scheduler is None:
             self.lr_scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda=lambda epoch: 1) # fake scheduler
