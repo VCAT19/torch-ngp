@@ -70,12 +70,12 @@ if __name__ == '__main__':
         query_pts = np.stack(np.meshgrid(t, t, t), -1).astype(np.float32)
         query_pts = query_pts.reshape(-1, N+1, 3)
         raw = []
-        for i in range(query_pts.shape[0] // chunk):
+        for i in range(query_pts.shape[0] // chunk + 1):
             pts = query_pts[i*chunk: (i+1)*chunk, :]
             raw_chunk = model.density(torch.tensor(pts).to(device),bound).cpu().numpy()
             raw.append(raw_chunk)
         raw = np.concatenate(raw)
-        raw = raw.reshape(-1,N+1,N+1)
+        raw = raw.reshape(N+1,N+1,N+1)
         #raw = model.density(torch.tensor(pts).to(device),bound).cpu().numpy()
     print('Bingo')
     sigma = np.maximum(raw[...,-1], 0.)
