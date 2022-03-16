@@ -68,6 +68,7 @@ if __name__ == '__main__':
     bound = 2
     with torch.no_grad():
         query_pts = np.stack(np.meshgrid(t, t, t), -1).astype(np.float32)
+        sh = query_pts.shape
         query_pts = query_pts.reshape(-1, N+1, 3)
         raw = []
         for i in range(query_pts.shape[0] // chunk + 1):
