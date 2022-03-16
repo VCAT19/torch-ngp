@@ -275,7 +275,7 @@ class Trainer(object):
         intrinsics = data["intrinsic"] # [B, 3, 3]
 	
 	#Print Density
-	bound = 2
+        bound = 2
         bound_min = torch.FloatTensor([-bound] * 3)
         bound_max = torch.FloatTensor([bound] * 3)
         resolution=256
