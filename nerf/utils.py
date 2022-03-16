@@ -171,8 +171,7 @@ class Trainer(object):
         self.console = Console()
         
 	# Print Density 1: Did not work
-        
-	model.to(self.device)
+        model.to(self.device)
 	
 	# Print Density 2:
 	bound = 2
