@@ -187,16 +187,6 @@ class Trainer(object):
             self.optimizer = optim.Adam(self.model.parameters(), lr=0.001, weight_decay=5e-4) # naive adam
         else:
             self.optimizer = optimizer(self.model)
-
-        if lr_scheduler is None:
-            self.lr_scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda=lambda epoch: 1) # fake scheduler
-        else:
-            self.lr_scheduler = lr_scheduler(self.optimizer)
-
-        if ema_decay is not None:
-            self.ema = ExponentialMovingAverage(self.model.parameters(), decay=ema_decay)
-        else:
-            self.ema = None
 	
 	# Print density 3:
         bound = 2
@@ -223,6 +213,18 @@ class Trainer(object):
                         pts = pts.to(self.device)
                         print(pts.is_cuda)
                         print(self.model.density(pts.to(self.device), bound))
+	
+        if lr_scheduler is None:
+            self.lr_scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda=lambda epoch: 1) # fake scheduler
+        else:
+            self.lr_scheduler = lr_scheduler(self.optimizer)
+
+        if ema_decay is not None:
+            self.ema = ExponentialMovingAverage(self.model.parameters(), decay=ema_decay)
+        else:
+            self.ema = None
+        
+	# Print density 4: worked
         self.scaler = torch.cuda.amp.GradScaler(enabled=self.fp16)
 
         # variable init
@@ -237,7 +239,7 @@ class Trainer(object):
             "best_result": None,
             }
 	
-	# Print density 4: worked
+	# Print density 5: worked
         bound = 2
         bound_min = torch.FloatTensor([-bound] * 3)
         bound_max = torch.FloatTensor([bound] * 3)
