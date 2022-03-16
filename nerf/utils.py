@@ -174,12 +174,6 @@ class Trainer(object):
         model.to(self.device)
 	
 	# Print Density 2: Did not work
-        if self.world_size > 1:
-            model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
-            model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank])
-        self.model = model
-	
-	#Print Density 3: 
         bound = 2
         bound_min = torch.FloatTensor([-bound] * 3)
         bound_max = torch.FloatTensor([bound] * 3)
@@ -204,6 +198,13 @@ class Trainer(object):
                         pts = pts.to(self.device)
                         print(pts.is_cuda)
                         print(self.model.density(pts.to(self.device), bound))
+			
+        if self.world_size > 1:
+            model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+            model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank])
+        self.model = model
+	
+	#Print Density 3: Worked
 			
         if isinstance(criterion, nn.Module):
             criterion.to(self.device)
