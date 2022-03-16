@@ -173,31 +173,7 @@ class Trainer(object):
 	# Print Density 1: Did not work
         model.to(self.device)
 	
-	# Print Density 2:
-        bound = 2
-        bound_min = torch.FloatTensor([-bound] * 3)
-        bound_max = torch.FloatTensor([bound] * 3)
-        resolution=256
-        N = 64
-        X = torch.linspace(bound_min[0], bound_max[0], resolution).split(N)
-        Y = torch.linspace(bound_min[1], bound_max[1], resolution).split(N)
-        Z = torch.linspace(bound_min[2], bound_max[2], resolution).split(N)
-        with torch.no_grad():
-            for xi, xs in enumerate(X):
-                for yi, ys in enumerate(Y):
-                    for zi, zs in enumerate(Z):
-                        xx, yy, zz = torch.meshgrid(xs, ys, zs, indexing='ij') # for torch < 1.10, should remove indexing='ij'
-                        pts = torch.cat([xx.reshape(-1, 1), yy.reshape(-1, 1), zz.reshape(-1, 1)], dim=-1).unsqueeze(0)
-                        print(self.device)
-                        print("shape:")
-                        print(pts.shape)
-                        print("size:")
-                        print(pts.size)
-                        print("This is it")
-                        print(pts)
-                        pts = pts.to(self.device)
-                        print(pts.is_cuda)
-                        print(self.model.density(pts.to(self.device), bound))
+	# Print Density 2: Did not work
         if self.world_size > 1:
             model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
             model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank])
@@ -236,7 +212,30 @@ class Trainer(object):
             "best_result": None,
             }
 	# Print density 3: worked
-        
+        bound = 2
+        bound_min = torch.FloatTensor([-bound] * 3)
+        bound_max = torch.FloatTensor([bound] * 3)
+        resolution=256
+        N = 64
+        X = torch.linspace(bound_min[0], bound_max[0], resolution).split(N)
+        Y = torch.linspace(bound_min[1], bound_max[1], resolution).split(N)
+        Z = torch.linspace(bound_min[2], bound_max[2], resolution).split(N)
+        with torch.no_grad():
+            for xi, xs in enumerate(X):
+                for yi, ys in enumerate(Y):
+                    for zi, zs in enumerate(Z):
+                        xx, yy, zz = torch.meshgrid(xs, ys, zs, indexing='ij') # for torch < 1.10, should remove indexing='ij'
+                        pts = torch.cat([xx.reshape(-1, 1), yy.reshape(-1, 1), zz.reshape(-1, 1)], dim=-1).unsqueeze(0)
+                        print(self.device)
+                        print("shape:")
+                        print(pts.shape)
+                        print("size:")
+                        print(pts.size)
+                        print("This is it")
+                        print(pts)
+                        pts = pts.to(self.device)
+                        print(pts.is_cuda)
+                        print(self.model.density(pts.to(self.device), bound))
         # auto fix
         if len(metrics) == 0 or self.use_loss_as_metric:
             self.best_mode = 'min'
