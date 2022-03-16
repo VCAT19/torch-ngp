@@ -174,7 +174,7 @@ class Trainer(object):
         model.to(self.device)
 	
 	# Print Density 2:
-	bound = 2
+        bound = 2
         bound_min = torch.FloatTensor([-bound] * 3)
         bound_max = torch.FloatTensor([bound] * 3)
         resolution=256
