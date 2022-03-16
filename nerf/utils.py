@@ -170,8 +170,12 @@ class Trainer(object):
         self.device = device if device is not None else torch.device(f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu')
         self.console = Console()
         
-	# Print Density 1
-        bound = 2
+	# Print Density 1: Did not work
+        
+	model.to(self.device)
+	
+	# Print Density 2:
+	bound = 2
         bound_min = torch.FloatTensor([-bound] * 3)
         bound_max = torch.FloatTensor([bound] * 3)
         resolution=256
@@ -195,7 +199,6 @@ class Trainer(object):
                         pts = pts.to(self.device)
                         print(pts.is_cuda)
                         print(self.model.density(pts.to(self.device), bound))
-        model.to(self.device)
         if self.world_size > 1:
             model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
             model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank])
@@ -233,7 +236,7 @@ class Trainer(object):
             "checkpoints": [], # record path of saved ckpt, to automatically remove old ckpt
             "best_result": None,
             }
-	# Print density 2: worked
+	# Print density 3: worked
         
         # auto fix
         if len(metrics) == 0 or self.use_loss_as_metric:
