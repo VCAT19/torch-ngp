@@ -197,7 +197,32 @@ class Trainer(object):
             self.ema = ExponentialMovingAverage(self.model.parameters(), decay=ema_decay)
         else:
             self.ema = None
-
+	
+	# Print density 3:
+        bound = 2
+        bound_min = torch.FloatTensor([-bound] * 3)
+        bound_max = torch.FloatTensor([bound] * 3)
+        resolution=256
+        N = 64
+        X = torch.linspace(bound_min[0], bound_max[0], resolution).split(N)
+        Y = torch.linspace(bound_min[1], bound_max[1], resolution).split(N)
+        Z = torch.linspace(bound_min[2], bound_max[2], resolution).split(N)
+        with torch.no_grad():
+            for xi, xs in enumerate(X):
+                for yi, ys in enumerate(Y):
+                    for zi, zs in enumerate(Z):
+                        xx, yy, zz = torch.meshgrid(xs, ys, zs, indexing='ij') # for torch < 1.10, should remove indexing='ij'
+                        pts = torch.cat([xx.reshape(-1, 1), yy.reshape(-1, 1), zz.reshape(-1, 1)], dim=-1).unsqueeze(0)
+                        print(self.device)
+                        print("shape:")
+                        print(pts.shape)
+                        print("size:")
+                        print(pts.size)
+                        print("This is it")
+                        print(pts)
+                        pts = pts.to(self.device)
+                        print(pts.is_cuda)
+                        print(self.model.density(pts.to(self.device), bound))
         self.scaler = torch.cuda.amp.GradScaler(enabled=self.fp16)
 
         # variable init
@@ -211,7 +236,8 @@ class Trainer(object):
             "checkpoints": [], # record path of saved ckpt, to automatically remove old ckpt
             "best_result": None,
             }
-	# Print density 3: worked
+	
+	# Print density 4: worked
         bound = 2
         bound_min = torch.FloatTensor([-bound] * 3)
         bound_max = torch.FloatTensor([bound] * 3)
