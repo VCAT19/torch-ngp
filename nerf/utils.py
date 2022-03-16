@@ -178,13 +178,9 @@ class Trainer(object):
             model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
             model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank])
         self.model = model
-
-        if isinstance(criterion, nn.Module):
-            criterion.to(self.device)
-        self.criterion = criterion
-
-        # Print Density 3:
-        bound = 2
+	
+	#Print Density 3: 
+	bound = 2
         bound_min = torch.FloatTensor([-bound] * 3)
         bound_max = torch.FloatTensor([bound] * 3)
         resolution=256
@@ -208,13 +204,19 @@ class Trainer(object):
                         pts = pts.to(self.device)
                         print(pts.is_cuda)
                         print(self.model.density(pts.to(self.device), bound))
+			
+        if isinstance(criterion, nn.Module):
+            criterion.to(self.device)
+        self.criterion = criterion
+
+        # Print Density 4: Worked
 	
         if optimizer is None:
             self.optimizer = optim.Adam(self.model.parameters(), lr=0.001, weight_decay=5e-4) # naive adam
         else:
             self.optimizer = optimizer(self.model)
 	
-	# Print density 4: Worked
+	# Print density 5: Worked
 	
         if lr_scheduler is None:
             self.lr_scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda=lambda epoch: 1) # fake scheduler
@@ -226,7 +228,7 @@ class Trainer(object):
         else:
             self.ema = None
         
-	# Print density 5: worked
+	# Print density 6: worked
         self.scaler = torch.cuda.amp.GradScaler(enabled=self.fp16)
 
         # variable init
@@ -241,7 +243,7 @@ class Trainer(object):
             "best_result": None,
             }
 	
-	# Print density 6: worked
+	# Print density 7: worked
        
         # auto fix
         if len(metrics) == 0 or self.use_loss_as_metric:
