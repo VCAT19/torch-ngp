@@ -58,38 +58,13 @@ if __name__ == '__main__':
     )
     #model = NeRFNetwork(encoding="frequency", encoding_dir="frequency", num_layers=4, hidden_dim=256, geo_feat_dim=256, num_layers_color=4, hidden_dim_color=128)
     print(model)
-    
-#        model.name = name
-#        model.conf = conf
-#        model.mute = mute
-#        model.metrics = metrics
-#        model.local_rank = local_rank
-#        model.world_size = world_size
-#        model.workspace = workspace
-#        model.ema_decay = ema_decay
-#        model.fp16 = fp16
-#        model.best_mode = best_mode
-#        model.use_loss_as_metric = use_loss_as_metric
-#        model.max_keep_ckpt = max_keep_ckpt
-#        model.eval_interval = eval_interval
-#        model.use_checkpoint = use_checkpoint
-#        model.use_tensorboardX = use_tensorboardX
-#        model.time_stamp = time.strftime("%Y-%m-%d_%H-%M-%S")
-#        model.scheduler_update_every_step = scheduler_update_every_step
-#        model.device = device if device is not None else torch.device(f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu')
-#        model.console = Console()
-
-#        if model.world_size > 1:
-#            model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
-#            model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank])
-#        self.model = model
 
     # Marching Cubes from Tim Chen
     N = 512
     t = np.linspace(-1.2, 1.2, N+1)
     chunk = 100
     device = torch.device('cuda')
-    model = model.to(device)
+    model = model.to(device) # Need to send entire model to GPU otherwise embedding is not considered cuda tensor
     bound = 2
     with torch.no_grad():
         query_pts = np.stack(np.meshgrid(t, t, t), -1).astype(np.float32)
@@ -100,7 +75,7 @@ if __name__ == '__main__':
             raw_chunk = model.density(torch.tensor(pts).to(device),bound).cpu().numpy()
             raw.append(raw_chunk)
         raw = np.concatenate(raw)
-        raw = raw.reshape(N+1,N+1,N+1)
+        raw = raw.reshape(-1,N+1,N+1)
         #raw = model.density(torch.tensor(pts).to(device),bound).cpu().numpy()
     print('Bingo')
     sigma = np.maximum(raw[...,-1], 0.)
