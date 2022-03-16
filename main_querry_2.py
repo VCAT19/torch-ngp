@@ -76,7 +76,7 @@ if __name__ == '__main__':
             raw_chunk = model.density(torch.tensor(pts).to(device),bound).cpu().numpy()
             raw.append(raw_chunk)
         raw = np.concatenate(raw)
-        raw = raw.reshape(N+1,N+1,N+1)
+        raw = raw.reshape(N+1,N+1,N+1,1)
         #raw = model.density(torch.tensor(pts).to(device),bound).cpu().numpy()
     print('Bingo')
     sigma = np.maximum(raw[...,-1], 0.)
